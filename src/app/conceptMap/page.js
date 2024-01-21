@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useRecordVoice } from "@/hooks/useRecordVoice";
 import { IconMicrophone } from "@/app/components/IconMicrophone";
 import { Spinner } from "@/app/components/Spinner";
-import { testText } from "./constants";
+import Mermaid from "../components/Mermaid";
+// import { testText } from "./constants";
 import {
   FaceFrownIcon,
   FaceSmileIcon,
@@ -55,14 +56,21 @@ function createWordCloud(
     .catch((error) => console.error("Error:", error));
 }
 
-const Microphone = () => {
+const KeyGen = () => {
   const { startRecording, stopRecording, text } = useRecordVoice();
   const [oldWordCloudImage, setOldWordCloudImage] = useState("");
   const [newWordCloudImage, setNewWordCloudImage] = useState("");
   const [transcriptText, setTranscriptText] = useState("");
   const [svgString, setSvgString] = useState("");
+  const [mermaidString, setMermaidString] = useState("");
+  const [summaryText, setSummaryText] = useState("");
   const [isLoading, setIsLoading] = useState(false); // Loading state
   const [isRecording, setIsRecording] = useState(false); // Loading state
+  const [componentDidMount, setComponentDidMount] = useState(false); //
+
+  function replaceSemicolonWithNewline(inputString) {
+    return inputString.replace(/;/g, "\n");
+  }
 
   function processTranscript(
     textToProcess,
@@ -83,6 +91,15 @@ const Microphone = () => {
       })
         .then((response) => response.json())
         .then((data) => {
+          console.log(data);
+
+          // Set the payload to the mermaid here!
+          console.log(replaceSemicolonWithNewline(data.loopOutput.mermaid));
+          // setMermaidString(
+          //   replaceSemicolonWithNewline(data.loopOutput.mermaid)
+          // );
+          setMermaidString(tempChartDefinition);
+          setSummaryText(data.loopOutput.summary);
           createWordCloud(data.loopOutput, (imageUrl) => {
             setNewWordCloudImage(imageUrl); // Handle the new image URL
           });
@@ -101,19 +118,52 @@ const Microphone = () => {
   }
 
   useEffect(() => {
-    console.log("send started");
-    processTranscript(
-      text,
-      setNewWordCloudImage,
-      setOldWordCloudImage,
-      setIsLoading,
-      createWordCloud
-    );
-  }, [text]);
+    setComponentDidMount(true);
+  }, []);
 
+  // useEffect(() => {
+  //   console.log("send started");
+  //   processTranscript(
+  //     text,
+  //     setNewWordCloudImage,
+  //     setOldWordCloudImage,
+  //     setIsLoading,
+  //     createWordCloud
+  //   );
+  // }, [text]);
+
+  const chartDefinition = `
+    sequenceDiagram
+  participant Alice
+  participant Bob
+  Alice->>Bob: Hello Bob, how are you?
+  Bob-->>Alice: I am good thanks!
+   `;
+  const tempChartDefinition = `
+  erDiagram
+    Communication ||--o{ StudentSuccess : "vital_for"
+    StudentSuccess ||--o{ SpeakingAbility : "determined_by"
+    StudentSuccess ||--o{ WritingAbility : "determined_by"
+    StudentSuccess ||--o{ QualityOfIdeas : "determined_by"
+    SpeakingAbility ||--o{ Knowledge : "contributes_to"
+    SpeakingAbility ||--o{ Practice : "contributes_to"
+    SpeakingAbility ||--o{ Talent : "contributes_to"
+    WritingAbility ||--o{ Knowledge : "contributes_to"
+    WritingAbility ||--o{ Practice : "contributes_to"
+    WritingAbility ||--o{ Talent : "contributes_to"
+    QualityOfIdeas ||--o{ SpeakingTechniques : "supported_by"
+    SpeakingTechniques ||--o{ Technique : "includes"
+    Technique ||--o{ Heuristic : "example_of"
+    Technique ||--o{ JobOpportunity : "leads_to"
+    JobOpportunity ||--o{ NonLinearProcess : "involves"
+    Communication ||--o{ RuleOfEngagement : "requires"
+    RuleOfEngagement ||--o{ NoLaptops : "includes"
+    RuleOfEngagement ||--o{ NoCellPhones : "includes"
+
+`;
   return (
     <div className="flex flex-col justify-center items-center min-w-full">
-      <h1 class="text-4xl font-bold text-gray-800 my-16">Key Cloud Gen</h1>
+      <h1 class="text-4xl font-bold text-gray-800 my-16">Key Concept Gen</h1>
 
       {isLoading ? (
         <Spinner />
@@ -192,8 +242,14 @@ const Microphone = () => {
               <p className="text-white">Stop</p>
             </button>
           )}
-          <p>{text}</p>
-
+          <p className="px-48 py-8 text-xl">{text}</p>
+          <div className="flex justify-center items-center p-8 w-96 h-96">
+            {/* <div className="flex justify-center items-center p-8 w-screen min-w-full min-h-full"> */}
+            {componentDidMount && (
+              <Mermaid chart={mermaidString || chartDefinition} />
+            )}
+          </div>
+          <p className="px-48 py-8 text-xl">{summaryText}</p>
           {/* <button
             onMouseDown={() => {
               console.log("onMouseDown");
@@ -203,42 +259,9 @@ const Microphone = () => {
             onTouchStart={startRecording}
             onTouchEnd={stopRecording}
             className="border-none bg-transparent w-10 h-10"
-          >
+            >
             <IconMicrophone />
           </button> */}
-          <div className="mx-auto mt-16 grid max-w-2xl auto-rows-fr grid-cols-1 gap-8 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-2 px-8">
-            {/* LLM Processed Word Cloud */}
-            <div className="flex flex-col justify-end overflow-hidden rounded-2xl  p-8 border-cyan-300 border-4">
-              <h2 class="text-2xl font-bold text-gray-800 my-16">
-                LLM processed word Cloud
-              </h2>
-
-              {/* <p></p> */}
-              {oldWordCloudImage && (
-                <img
-                  src={newWordCloudImage}
-                  alt="Word Cloud"
-                  className="w-full h-auto object-cover"
-                />
-              )}
-            </div>
-
-            {/* Pure Word Cloud */}
-            <div className="flex flex-col justify-end overflow-hidden rounded-2xl  p-8 border-cyan-300 border-4">
-              {/* <div className="flex flex-col justify-end overflow-hidden rounded-2xl bg-indigo-100 p-8"> */}
-              <h2 class="text-2xl font-bold text-gray-800 my-16">
-                Pure Word Cloud
-              </h2>
-              {/* <p></p> */}
-              {oldWordCloudImage && (
-                <img
-                  src={oldWordCloudImage}
-                  alt="Word Cloud"
-                  className="w-full h-auto object-cover"
-                />
-              )}
-            </div>
-          </div>
         </>
       )}
     </div>
@@ -287,7 +310,7 @@ const Microphone = () => {
   // );
 };
 
-export { Microphone };
+export default KeyGen;
 
 // "use client";
 
