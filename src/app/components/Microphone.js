@@ -15,6 +15,7 @@ const Microphone = () => {
   const [oldWordCloudImage, setOldWordCloudImage] = useState("");
   const [svgString, setSvgString] = useState("");
   const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [isRecording, setIsRecording] = useState(false); // Loading state
 
   useEffect(() => {
     console.log("send started");
@@ -70,7 +71,30 @@ const Microphone = () => {
         <Spinner />
       ) : (
         <>
-          <button
+          {!isRecording ? (
+            <button
+              onClick={() => {
+                setIsRecording(true);
+                startRecording();
+              }}
+              className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              <p className="text-white">Start Recording</p>
+              {/* <IconMicrophone /> */}
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setIsRecording(false);
+                stopRecording();
+              }}
+              className="rounded-md bg-red-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 animate-pulse"
+            >
+              <p className="text-white"> Stop</p>
+              {/* <IconStop /> */}
+            </button>
+          )}
+          {/* <button
             onMouseDown={() => {
               console.log("onMouseDown");
               startRecording();
@@ -81,8 +105,28 @@ const Microphone = () => {
             className="border-none bg-transparent w-10 h-10"
           >
             <IconMicrophone />
-          </button>
+          </button> */}
           <p>{text}</p>
+          <div className="mx-auto mt-16 grid max-w-2xl auto-rows-fr grid-cols-1 gap-8 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-2">
+            {/* LLM Processed Word Cloud */}
+            <div className="flex flex-col justify-end overflow-hidden rounded-2xl bg-gray-900 p-8">
+              <p>LLM processed word Cloud</p>
+              {svgString && <SVGComponent svgString={svgString} />}
+            </div>
+
+            {/* Pure Word Cloud */}
+            <div className="flex flex-col justify-end overflow-hidden rounded-2xl bg-gray-900 p-8">
+              <p>Pure Word Cloud</p>
+              {oldWordCloudImage && (
+                <img
+                  src={oldWordCloudImage}
+                  alt="Word Cloud"
+                  className="w-full h-auto object-cover"
+                />
+              )}
+            </div>
+          </div>
+
           <div className="flex flex-row justify-center items-center space-x-4">
             {/* <div className="w-48 h-48 flex items-center justify-center overflow-hidden"> */}{" "}
             {/* Container for SVG */}
