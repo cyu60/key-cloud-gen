@@ -74,7 +74,7 @@ const Microphone = () => {
     if (textToProcess) {
       setIsLoading(true); // Start loading
 
-      fetch("/api/processTranscript/", {
+      fetch("/api/generateWordCloud/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
